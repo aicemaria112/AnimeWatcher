@@ -23,7 +23,7 @@ class _SearchScreenState extends State<SearchScreen> {
   String? _selectedDemography;
 
   final List<String> _types = ['MANGA', 'MANHWA', 'MANHUA', 'NOVEL'];
-  final List<String> _demographics = ['Shounen', 'Seinen', 'Shoujo', 'Josei'];
+  final List<String> _demographics = ['shounen', 'seinen', 'shoujo', 'josei'];
 
   @override
   void dispose() {
@@ -103,33 +103,33 @@ class _SearchScreenState extends State<SearchScreen> {
                 // Use Column instead of Row to prevent overflow
                 Column(
                   children: [
-                    DropdownButtonFormField<String>(
-                      isExpanded: true, // Prevent overflow
-                      decoration: const InputDecoration(
-                        labelText: 'Type',
-                        border: OutlineInputBorder(),
-                        contentPadding: EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 8,
-                        ),
-                      ),
-                      value: _selectedType,
-                      items:
-                          [null, ..._types].map((type) {
-                            return DropdownMenuItem<String>(
-                              value: type,
-                              child: Text(
-                                type ?? 'All Types',
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            );
-                          }).toList(),
-                      onChanged: (value) {
-                        setState(() {
-                          _selectedType = value;
-                        });
-                      },
-                    ),
+                    // DropdownButtonFormField<String>(
+                    //   isExpanded: true, // Prevent overflow
+                    //   decoration: const InputDecoration(
+                    //     labelText: 'Type',
+                    //     border: OutlineInputBorder(),
+                    //     contentPadding: EdgeInsets.symmetric(
+                    //       horizontal: 12,
+                    //       vertical: 8,
+                    //     ),
+                    //   ),
+                    //   value: _selectedType,
+                    //   items:
+                    //       [null, ..._types].map((type) {
+                    //         return DropdownMenuItem<String>(
+                    //           value: type,
+                    //           child: Text(
+                    //             type ?? 'All Types',
+                    //             overflow: TextOverflow.ellipsis,
+                    //           ),
+                    //         );
+                    //       }).toList(),
+                    //   onChanged: (value) {
+                    //     setState(() {
+                    //       _selectedType = value;
+                    //     });
+                    //   },
+                    // ),
                     const SizedBox(height: 16),
                     DropdownButtonFormField<String>(
                       isExpanded: true, // Prevent overflow
