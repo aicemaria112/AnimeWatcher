@@ -32,6 +32,8 @@ class MangaDetail extends Manga {
   final String status;
   final List<String> genres;
   final List<Chapter> chapters;
+  final bool hasMoreChapters;
+  final int totalChapters;
 
   MangaDetail({
     required super.title,
@@ -44,6 +46,8 @@ class MangaDetail extends Manga {
     required this.status,
     required this.genres,
     required this.chapters,
+    this.hasMoreChapters = false,
+    this.totalChapters = 0,
   });
 
   factory MangaDetail.fromJson(Map<String, dynamic> json) {

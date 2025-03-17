@@ -64,7 +64,7 @@ class MangaService {
     }).toList();
   }
 
-  Future<MangaDetail> getMangaDetails(String mangaId) async {
+  Future<MangaDetail> getMangaDetails(String mangaId, {int offset = 0, int limit = 100}) async {
     final response = await http.get(
       Uri.parse('$baseUrl/manga/$mangaId?includes[]=cover_art&includes[]=author&includes[]=artist'),
     );
@@ -84,14 +84,20 @@ class MangaService {
           ? 'https://uploads.mangadex.org/covers/${manga['id']}/$fileName.512.jpg'
           : '';
       
-      // Get chapters
+      // Get chapters with pagination
       final chaptersResponse = await http.get(
-        Uri.parse('$baseUrl/manga/$mangaId/feed?limit=100&translatedLanguage[]=es&translatedLanguage[]=es-la&order[volume]=desc&order[chapter]=desc'),
+        Uri.parse('$baseUrl/manga/$mangaId/feed?limit=$limit&offset=$offset&translatedLanguage[]=es&translatedLanguage[]=es-la&order[volume]=desc&order[chapter]=desc'),
       );
       
       List<Chapter> chapters = [];
+      int total = 0;
+      bool hasMoreChapters = false;
+      
       if (chaptersResponse.statusCode == 200) {
         final Map<String, dynamic> chaptersData = json.decode(chaptersResponse.body);
+        total = chaptersData['total'] ?? 0;
+        hasMoreChapters = (offset + limit) < total;
+        
         chapters = (chaptersData['data'] as List).map((chapter) {
           return Chapter(
             title: chapter['attributes']['title']!= null ? (chapter['attributes']['title']!= "" ? chapter['attributes']['title'] :  'Chapter ${chapter['attributes']['chapter'] ?? ''}') :  'Chapter ${chapter['attributes']['chapter'] ?? ''}',
@@ -120,6 +126,8 @@ class MangaService {
         status: manga['attributes']['status'] ?? '',
         genres: genres,
         chapters: chapters,
+        hasMoreChapters: hasMoreChapters,
+        totalChapters: total,
       );
     }
     throw Exception('Failed to load manga details');
