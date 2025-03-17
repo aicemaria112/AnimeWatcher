@@ -17,11 +17,11 @@ class _SearchScreenState extends State<SearchScreen> {
   List<Manga>? _searchResults;
   bool _isLoading = false;
   String? _errorMessage;
-  
+
   // Filter options
   String? _selectedType;
   String? _selectedDemography;
-  
+
   final List<String> _types = ['MANGA', 'MANHWA', 'MANHUA', 'NOVEL'];
   final List<String> _demographics = ['Shounen', 'Seinen', 'Shoujo', 'Josei'];
 
@@ -32,36 +32,36 @@ class _SearchScreenState extends State<SearchScreen> {
   }
 
   Future<void> _searchManga() async {
-    if (_searchController.text.isEmpty) {
-      setState(() {
-        _errorMessage = 'Please enter a search term';
-      });
-      return;
-    }
-
     setState(() {
       _isLoading = true;
       _errorMessage = null;
     });
 
     try {
-      final results = await _mangaService.searchManga(_searchController.text);
+      // Allow empty search to show all available manga
+      final results =
+          _searchController.text.isEmpty
+              ? await _mangaService.getPopularMangas()
+              : await _mangaService.searchManga(_searchController.text);
+
       setState(() {
         _searchResults = results;
-        
+
         // Apply filters if selected
         if (_selectedType != null) {
-          _searchResults = _searchResults!.where(
-            (manga) => manga.type == _selectedType
-          ).toList();
+          _searchResults =
+              _searchResults!
+                  .where((manga) => manga.type == _selectedType)
+                  .toList();
         }
-        
+
         if (_selectedDemography != null) {
-          _searchResults = _searchResults!.where(
-            (manga) => manga.demography == _selectedDemography
-          ).toList();
+          _searchResults =
+              _searchResults!
+                  .where((manga) => manga.demography == _selectedDemography)
+                  .toList();
         }
-        
+
         _isLoading = false;
       });
     } catch (e) {
@@ -75,9 +75,7 @@ class _SearchScreenState extends State<SearchScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Search Manga'),
-      ),
+      appBar: AppBar(title: const Text('Search Manga')),
       body: Column(
         children: [
           Padding(
@@ -102,96 +100,153 @@ class _SearchScreenState extends State<SearchScreen> {
                   onSubmitted: (_) => _searchManga(),
                 ),
                 const SizedBox(height: 16),
-                Row(
+                // Use Column instead of Row to prevent overflow
+                Column(
                   children: [
-                    Expanded(
-                      child: DropdownButtonFormField<String>(
-                        decoration: const InputDecoration(
-                          labelText: 'Type',
-                          border: OutlineInputBorder(),
+                    DropdownButtonFormField<String>(
+                      isExpanded: true, // Prevent overflow
+                      decoration: const InputDecoration(
+                        labelText: 'Type',
+                        border: OutlineInputBorder(),
+                        contentPadding: EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 8,
                         ),
-                        value: _selectedType,
-                        items: [null, ..._types].map((type) {
-                          return DropdownMenuItem<String>(
-                            value: type,
-                            child: Text(type ?? 'All Types'),
-                          );
-                        }).toList(),
-                        onChanged: (value) {
-                          setState(() {
-                            _selectedType = value;
-                          });
-                        },
                       ),
+                      value: _selectedType,
+                      items:
+                          [null, ..._types].map((type) {
+                            return DropdownMenuItem<String>(
+                              value: type,
+                              child: Text(
+                                type ?? 'All Types',
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            );
+                          }).toList(),
+                      onChanged: (value) {
+                        setState(() {
+                          _selectedType = value;
+                        });
+                      },
                     ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: DropdownButtonFormField<String>(
-                        decoration: const InputDecoration(
-                          labelText: 'Demography',
-                          border: OutlineInputBorder(),
+                    const SizedBox(height: 16),
+                    DropdownButtonFormField<String>(
+                      isExpanded: true, // Prevent overflow
+                      decoration: const InputDecoration(
+                        labelText: 'Demography',
+                        border: OutlineInputBorder(),
+                        contentPadding: EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 8,
                         ),
-                        value: _selectedDemography,
-                        items: [null, ..._demographics].map((demo) {
-                          return DropdownMenuItem<String>(
-                            value: demo,
-                            child: Text(demo ?? 'All Demographics'),
-                          );
-                        }).toList(),
-                        onChanged: (value) {
-                          setState(() {
-                            _selectedDemography = value;
-                          });
-                        },
                       ),
+                      value: _selectedDemography,
+                      items:
+                          [null, ..._demographics].map((demo) {
+                            return DropdownMenuItem<String>(
+                              value: demo,
+                              child: Text(
+                                demo ?? 'All Demographics',
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            );
+                          }).toList(),
+                      onChanged: (value) {
+                        setState(() {
+                          _selectedDemography = value;
+                        });
+                      },
                     ),
                   ],
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 24),
                 ElevatedButton(
                   onPressed: _searchManga,
                   style: ElevatedButton.styleFrom(
                     minimumSize: const Size.fromHeight(50),
+                    backgroundColor: Theme.of(context).colorScheme.primary,
+                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    elevation: 3,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
                   ),
-                  child: const Text('Search'),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.search, size: 24),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Search',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
           ),
           Expanded(
-            child: _isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : _errorMessage != null
+            child:
+                _isLoading
+                    ? const Center(child: CircularProgressIndicator())
+                    : _errorMessage != null
                     ? Center(child: Text(_errorMessage!))
                     : _searchResults == null
-                        ? const Center(child: Text('Search for manga'))
-                        : _searchResults!.isEmpty
-                            ? const Center(child: Text('No results found'))
-                            : GridView.builder(
-                                padding: const EdgeInsets.all(16.0),
-                                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                                  crossAxisCount: 2,
-                                  childAspectRatio: 0.7,
-                                  crossAxisSpacing: 16,
-                                  mainAxisSpacing: 16,
-                                ),
-                                itemCount: _searchResults!.length,
-                                itemBuilder: (context, index) {
-                                  return MangaCard(
-                                    manga: _searchResults![index],
-                                    onTap: () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) => MangaDetailsScreen(
-                                            manga: _searchResults![index],
-                                          ),
+                    ? const Center(child: Text('Search for manga'))
+                    : _searchResults!.isEmpty
+                    ? const Center(child: Text('No results found'))
+                    : GridView.builder(
+                      padding: const EdgeInsets.all(16.0),
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2,
+                            childAspectRatio: 0.6, // Reducido de 0.7 para hacer las tarjetas más altas
+                            crossAxisSpacing: 16,
+                            mainAxisSpacing: 16,
+                          ),
+                      itemCount: _searchResults!.length,
+                      itemBuilder: (context, index) {
+                        // return MangaCard(
+                        //   manga: _searchResults![index],
+                        //   onTap: () {
+                        //     Navigator.push(
+                        //       context,
+                        //       MaterialPageRoute(
+                        //         builder: (context) => MangaDetailsScreen(
+                        //           manga: _searchResults![index],
+                        //         ),
+                        //       ),
+                        //     );
+                        //   },
+                        // );
+                        return SizedBox(
+                          width: 200,
+                          child: Padding(
+                            padding: const EdgeInsets.only(right: 16),
+                            child: MangaCard(
+                              manga: _searchResults![index],
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder:
+                                        (context) => MangaDetailsScreen(
+                                          manga: _searchResults![index],
                                         ),
-                                      );
-                                    },
-                                  );
-                                },
-                              ),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        );
+                      },
+                    ),
           ),
         ],
       ),

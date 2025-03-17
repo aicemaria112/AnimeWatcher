@@ -273,11 +273,11 @@ class _MangaCardState extends State<MangaCard> with SingleTickerProviderStateMix
                         style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
                       ),
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 8), // Aumentado de 4 a 8 para dar más espacio
                     Expanded(
                       flex: 3,
                       child: SizedBox(
-                        height: 40,
+                        height: 50, // Aumentado de 40 a 50 para dar más espacio a los chips
                         child: Wrap(
                           spacing: 8,
                           runSpacing: 4,

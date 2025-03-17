@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import '../models/manga.dart';
 import '../services/manga_service.dart';
@@ -5,6 +7,8 @@ import '../widgets/manga_card.dart';
 import '../screens/manga_details_screen.dart';
 import '../screens/search_screen.dart';
 import '../screens/bookmarks_screen.dart';
+import 'package:flutter/services.dart';
+
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -18,11 +22,14 @@ class _HomeScreenState extends State<HomeScreen> {
   late Future<List<Manga>> _popularManga;
   late Future<List<Manga>> _joseiManga;
   late Future<List<Manga>> _seinenManga;
+  double _opacity = 1.0;
+  Timer? _timer;
 
   @override
   void initState() {
     super.initState();
     _loadData();
+    _startAnimation();
   }
 
   void _loadData() {
@@ -88,6 +95,148 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  void _startAnimation() {
+    _timer = Timer.periodic(const Duration(milliseconds: 1500), (timer) {
+      setState(() {
+        _opacity = _opacity == 1.0 ? 0.3 : 1.0;
+      });
+    });
+  }
+
+  void _showDonationDialog(BuildContext context) {
+    showGeneralDialog(
+      context: context,
+      pageBuilder: (context, animation, secondaryAnimation) {
+        return Center(
+          child: Material(
+            color: Colors.transparent,
+            child: ScaleTransition(
+              scale: CurvedAnimation(
+                parent: animation,
+                curve: Curves.easeOutBack,
+              ),
+              child: AlertDialog(
+                backgroundColor: Theme.of(context).dialogBackgroundColor,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                content: SizedBox(
+                  width: double.maxFinite,
+                  child: ListView(
+                    shrinkWrap: true,
+                    children: [
+                      Text(
+                        '✨ ¡Colabora con MangaVibe!',
+                        style: TextStyle(
+                          fontSize: 18,
+                          color: Theme.of(context).colorScheme.primary,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        textAlign: TextAlign.start,
+                      ),
+                      const SizedBox(height: 20),
+                      _buildInfoRow(
+                        Icons.info,
+                        'Versión',
+                        'MangaVibe v1.0.0',
+                      ),
+                      _buildInfoRow(
+                        Icons.favorite,
+                        'Tu apoyo es clave',
+                        'Tu contribución nos ayuda a mejorar la aplicación y mantener los servidores. ¡Cada donación cuenta!',
+                      ),
+                      _buildAccountInfo(),
+                      _buildEmailRow(),
+                      const SizedBox(height: 20),
+                      Text(
+                        '¡Gracias por tu confianza! 😊',
+                        style: Theme.of(context).textTheme.bodySmall,
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: Text(
+                      'Cerrar',
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.secondary,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildInfoRow(IconData icon, String title, String text) {
+    return ListTile(
+      leading: Icon(icon, color: Theme.of(context).colorScheme.primary),
+      title: Text(title, style: Theme.of(context).textTheme.titleSmall),
+      subtitle: Text(text, style: Theme.of(context).textTheme.bodyMedium),
+      contentPadding: EdgeInsets.zero,
+    );
+  }
+
+  Widget _buildAccountInfo() {
+    return ListTile(
+      leading: Icon(Icons.payment, color: Theme.of(context).colorScheme.primary),
+      title: Text('Donar a', style: Theme.of(context).textTheme.titleSmall),
+      subtitle: Row(
+        children: [
+          Text(
+            '9204 1299 7519 0036',
+            style: TextStyle(
+              color: Colors.green.shade700,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          IconButton(
+            icon: const Icon(Icons.content_copy, size: 18),
+            onPressed: () {
+              Clipboard.setData(const ClipboardData(text: '9204 1299 7519 0036'));
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('¡Número copiado! 🎉')),
+              );
+            },
+          ),
+        ],
+      ),
+      contentPadding: EdgeInsets.zero,
+    );
+  }
+
+  Widget _buildEmailRow() {
+    return ListTile(
+      leading: Icon(Icons.bug_report, color: Theme.of(context).colorScheme.primary),
+      title: Text('Reportar errores', style: Theme.of(context).textTheme.titleSmall),
+      subtitle: GestureDetector(
+        onTap: () async {
+          final url = Uri.parse('mailto:aicemaria112@gmail.com');
+        },
+        child: Text(
+          'mailto:aicemaria112@gmail.com',
+          style: TextStyle(
+            color: Colors.blue.shade700,
+            decoration: TextDecoration.underline,
+          ),
+        ),
+      ),
+      contentPadding: EdgeInsets.zero,
+    );
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -116,6 +265,11 @@ class _HomeScreenState extends State<HomeScreen> {
               );
             },
           ),
+          IconButton(
+      icon: const Icon(Icons.favorite, color: Colors.white),
+      color: Colors.pinkAccent,
+      onPressed: () => _showDonationDialog(context),
+    ),
         ],
       ),
       body: RefreshIndicator(

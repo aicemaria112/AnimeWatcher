@@ -196,7 +196,7 @@ class _MangaDetailsScreenState extends State<MangaDetailsScreen> {
                               ),
                             ],
                           )
-                        : const Icon(Icons.download),
+                        : const Icon(Icons.download_for_offline_outlined),
                       onPressed: _downloadProgress.containsKey(chapter.urlLeer) && _downloadProgress[chapter.urlLeer]! > 0 && _downloadProgress[chapter.urlLeer]! < 1
                         ? null
                         : () async {
@@ -277,7 +277,7 @@ class _MangaDetailsScreenState extends State<MangaDetailsScreen> {
                         },
                     ),
                   IconButton(
-                    icon: const Icon(Icons.arrow_forward),
+                    icon: const Icon(Icons.arrow_forward_ios),
                     onPressed: () {
                       Navigator.push(
                         context,

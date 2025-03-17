@@ -1,5 +1,5 @@
-name: manga_reader
-description: "A new Flutter project."
+name: manga_vibe
+description: "Sumérgete en el mundo de los mangas con MangaVibe , la app perfecta para disfrutar de tus historias favoritas, con una interfaz intuitiva, actualizaciones diarias y un catálogo lleno de emociones que te mantendrán pegado a la pantalla."
 publish_to: 'none'
 
 version: 1.0.0+1
@@ -27,3 +27,15 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+
+flutter_launcher_icons:
+  android: "ic_launcher"
+  ios: true
+  image_path: "assets/icon/icon.jpg"
+  min_sdk_android: 21 # android min sdk min:16, default 21
+  web:
+    generate: false
+  windows:
+    generate: false
+  macos:
+    generate: false
