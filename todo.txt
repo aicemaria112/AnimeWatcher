@@ -1,0 +1,23 @@
+basado en la informacion del data.txt quiero crear un front para listado y lectura de magas usando fluter para multiplataforma los requisitos son los siguientes:
+
+1- una vistade bienvenida donde se muestren los animes populares los seinen y josei
+
+2- una vista donde se muestre una lista de lso mangas donde se puedan hacer filtros por nombre y todos los que estan en el md
+
+3- una vista para los detalles del manga:
+
+info - capitulos - foto ect como en el documento
+
+4 - una vista para leer/ver las imagenes de cada capitulo(paginas del manga)
+
+5- una vista donde se vayan gaurdando los mangas que voy leyendo la pagina exacta por la que voy
+
+6 - en los capitulos debes darme la oportunidad de descargar un capitulo tanto en una carpeta donde gaurde todas las imagenes como un pedf genrado con todas las imagenes
+
+nota:
+
+cada dispositivo almacena el seguimiento de los mangas
+
+la carpeta donde se descargan las imagenes/pdf debe ser facilmente visible y bien organizada para el usuario
+
+quiero que se vea super bien el disenno para un buen lector de manga usa tema oscuro blur en las fotos de portada y todo lo genial que se te ocurra.

@@ -1,0 +1,60 @@
+Endpoint: https://tumangaonline-api.herokuapp.com/api/v1/manga/populares?pageNumber=2
+Parámetros:
+
+    pageNumber (opcional): Número de página para la paginación de los resultados.
+
+Descripción:
+Retorna una lista de mangas populares. Permite paginar los resultados mediante el parámetro "pageNumber".
+Ejemplo de salida:
+{ "statusCode": 200, "data": [ { "title": "Nishuume Cheat no Tensei Madoushi 〜Saikyou ga 1000-nengo ni Tensei", "score": "0.00", "type": "MANGA", "demography": "Shounen", "mangaUrl": "https://lectortmo.com/library/manga/53154/nishuume-cheat-no-tensei-madoushi-saikyou-ga-1000-nengo-ni-tensei", "mangaImagen": "https://otakuteca.com/images/books/cover/5f5377efbcf2a.jpg" } ] }
+
+Endpoint: https://tumangaonline-api.herokuapp.com/api/v1/manga/populares-seinen
+Parámetros:
+(No se especifican parámetros adicionales)
+
+Descripción:
+Devuelve una lista de mangas populares filtrados para la demografía "Seinen".
+Ejemplo de salida:
+{ "statusCode": 200, "data": [ { "title": "Dueña de la Pensión", "score": "0.00", "type": "MANHWA", "demography": "Seinen", "mangaUrl": "https://lectortmo.com/library/manhwa/53758/duena-de-la-pension", "mangaImagen": "https://otakuteca.com/images/books/cover/5f7186dfd183c.jpg" } ] }
+
+Endpoint: https://tumangaonline-api.herokuapp.com/api/v1/manga/info?mangaUrl=https://lectortmo.com/library/manga/23741/dr-stone
+Parámetros:
+
+    mangaUrl (requerido): URL del manga del cual se desea obtener la información.
+
+Descripción:
+Proporciona información detallada de un manga específico, incluyendo título, imagen, tipo, score, demografía, descripción, estado, géneros y una lista de capítulos con sus respectivas URL para leer.
+Ejemplo de salida:
+{ "statusCode": 200, "data": { "title": "Dr. Stone\n( 2017 )", "image": "https://otakuteca.com/images/books/cover/5d924d4309b18.jpg", "tipo": "MANGA", "score": "8.65", "demografia": "Shounen", "descripcion": "Senkuu y Taiju son dos amigos y estudiantes de preparatoria, el primero de ellos es un genio del club de química mientras que el otro es un grandullón musculoso e idiota. Después de 5 largos años, Taiju ha decidido declararle su amor a Yuzuriha, pero no todo siempre sale como nos gustaría... En la tierra ocurre un suceso que convierte a todo el mundo en piedra. ¿Cómo lograrán sobrevivir en este mundo post apocalíptico?", "estado": "Publicándose", "generos": [ "Acción", "Aventura", "Apocalíptico", "Comedia", "Supervivencia" ], "capitulo": [ { "Title": "Capítulo 169.00", "UrlLeer": "https://lectortmo.com/view_uploads/614301" } ] } }
+
+Endpoint: https://tumangaonline-api.herokuapp.com/api/v1/get-manga?urlPage=https://lectortmo.com/view_uploads/569910
+Parámetros:
+
+    urlPage (requerido): URL de la página del capítulo del manga del cual se quieren obtener las imágenes.
+
+Descripción:
+Devuelve un arreglo de URLs correspondientes a las imágenes de las páginas de un capítulo específico de un manga.
+Ejemplo de salida:
+{ "statusCode": 200, "data": [ "https://img1.tucomiconline.com/uploads/5f2701e221574/f64623e3.jpg" ] }
+
+Endpoint: https://tumangaonline-api.herokuapp.com/api/v1/manga/library?title=naruto
+Parámetros:
+
+    title (requerido): Título o parte del título del manga a buscar.
+    _page, orderItem, orderDir, filter_by, Type, demography, status, translation_status, webcomic, yonkoma, amateur, erotic (opcional): Parámetros adicionales para filtrar, ordenar y paginar los resultados.
+
+Descripción:
+Realiza una búsqueda en la biblioteca de mangas aplicando filtros y opciones de ordenamiento, retornando una lista de mangas que coinciden con el título especificado.
+Ejemplo de salida:
+{ "statusCode": 200, "data": [ { "title": "Naruto", "score": "8.50", "type": "MANGA", "demography": "Shounen", "mangaUrl": "https://lectortmo.com/library/manga/150/naruto", "mangaImagen": "https://otakuteca.com/images/books/cover/5ed5b1dfc26c3.jpg" } ] }
+
+Endpoint: https://tumangaonline-api.herokuapp.com/api/v1/manga/populares-josei
+Parámetros:
+(No se especifican parámetros adicionales)
+
+Descripción:
+Ruta adicional que es idéntica a la de "populares-seinen". Retorna una lista de mangas populares filtrados para la demografía "Seinen", pero se presenta como "populares-josei".
+Ejemplo de salida:
+{ "statusCode": 200, "data": [ { "title": "Dueña de la Pensión", "score": "0.00", "type": "MANHWA", "demography": "Seinen", "mangaUrl": "https://lectortmo.com/library/manhwa/53758/duena-de-la-pension", "mangaImagen": "https://otakuteca.com/images/books/cover/5f7186dfd183c.jpg" } ] }
+
+
