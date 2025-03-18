@@ -508,12 +508,12 @@ class _MangaDetailsScreenState extends State<MangaDetailsScreen> {
                                           final pages = await _mangaService.getChapterImages(chapter.urlLeer);
                                           
                                           // Download chapter
-                                          final mangaDir = await _storageService.getMangaDownloadPath(manga.title);
+                                          final chapterDir = await _storageService.getChapterDownloadPath(manga.title, chapter.title);
                                           
                                           // Download images with progress tracking
                                           for (var i = 0; i < pages.length; i++) {
                                             final file = await DefaultCacheManager().getSingleFile(pages[i]);
-                                            final newPath = '$mangaDir/page_${i + 1}.jpg';
+                                            final newPath = '$chapterDir/page_${i + 1}.jpg';
                                             await file.copy(newPath);
                                             
                                             // Update progress after each file is downloaded
@@ -527,7 +527,7 @@ class _MangaDetailsScreenState extends State<MangaDetailsScreen> {
                                           // Create PDF
                                           final pdf = pw.Document();
                                           for (var i = 0; i < pages.length; i++) {
-                                            final file = File('$mangaDir/page_${i + 1}.jpg');
+                                            final file = File('$chapterDir/page_${i + 1}.jpg');
                                             final imageBytes = await file.readAsBytes();
                                             final image = pw.MemoryImage(imageBytes);
                                             pdf.addPage(
@@ -540,7 +540,7 @@ class _MangaDetailsScreenState extends State<MangaDetailsScreen> {
                                               ),
                                             );
                                           }
-                                          await pdf.save().then((bytes) => File('$mangaDir/${chapter.title}.pdf').writeAsBytes(bytes));
+                                          await pdf.save().then((bytes) => File('$chapterDir/${chapter.title}.pdf').writeAsBytes(bytes));
 
                                           // Add bookmark for this manga
                                           await _storageService.addBookmark(widget.manga.mangaUrl);

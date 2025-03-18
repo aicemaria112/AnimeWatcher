@@ -91,6 +91,15 @@ class StorageService {
     }
     return mangaDir.path;
   }
+  
+  Future<String> getChapterDownloadPath(String mangaTitle, String chapterTitle) async {
+    final mangaDir = await getMangaDownloadPath(mangaTitle);
+    final chapterDir = Directory('$mangaDir/${_sanitizeFileName(chapterTitle)}');
+    if (!await chapterDir.exists()) {
+      await chapterDir.create(recursive: true);
+    }
+    return chapterDir.path;
+  }
 
   String _sanitizeFileName(String fileName) {
     return fileName.replaceAll(RegExp(r'[<>:"/\\|?*]'), '_');
@@ -129,7 +138,8 @@ class StorageService {
   // Check if a chapter is downloaded
   Future<bool> isChapterDownloaded(String mangaTitle, String chapterTitle) async {
     final mangaDir = await getMangaDownloadPath(_sanitizeFileName(mangaTitle));
-    final pdfFile = File('$mangaDir/$chapterTitle.pdf');
+    final chapterDir = Directory('$mangaDir/${_sanitizeFileName(chapterTitle)}');
+    final pdfFile = File('${chapterDir.path}/$chapterTitle.pdf');
     return await pdfFile.exists();
   }
 

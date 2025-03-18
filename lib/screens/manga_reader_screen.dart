@@ -29,6 +29,10 @@ class _MangaReaderScreenState extends State<MangaReaderScreen> {
   int _currentPage = 0;
   bool _isLoading = false;
   double _downloadProgress = 0.0; // Track download progress percentage
+  
+  // Variables para el control de zoom con doble tap
+  final Map<int, TransformationController> _transformationControllers = {};
+  final Map<int, bool> _isZoomed = {};
 
   @override
   void initState() {
@@ -61,8 +65,8 @@ class _MangaReaderScreenState extends State<MangaReaderScreen> {
   Future<List<String>> _getLocalImagePaths() async {
     // Get manga title from the manga service
     final mangaDetail = await _mangaService.getMangaDetails(widget.mangaUrl);
-    final mangaDir = await _storageService.getMangaDownloadPath(mangaDetail.title);
-    final directory = Directory(mangaDir);
+    final chapterDir = await _storageService.getChapterDownloadPath(mangaDetail.title, widget.chapter.title);
+    final directory = Directory(chapterDir);
     final List<String> imagePaths = [];
     
     // Get all jpg files in the directory
@@ -141,12 +145,12 @@ class _MangaReaderScreenState extends State<MangaReaderScreen> {
     try {
       // Get manga title from the manga service
       final mangaDetail = await _mangaService.getMangaDetails(widget.mangaUrl);
-      final mangaDir = await _storageService.getMangaDownloadPath(mangaDetail.title);
+      final chapterDir = await _storageService.getChapterDownloadPath(mangaDetail.title, widget.chapter.title);
       
       // Download images with progress tracking
       for (var i = 0; i < pages.length; i++) {
         final file = await DefaultCacheManager().getSingleFile(pages[i]);
-        final newPath = '$mangaDir/page_${i + 1}.jpg';
+        final newPath = '$chapterDir/page_${i + 1}.jpg';
         await file.copy(newPath);
         
         // Update progress after each file is downloaded
@@ -160,7 +164,7 @@ class _MangaReaderScreenState extends State<MangaReaderScreen> {
       // Create PDF
       final pdf = pw.Document();
       for (var i = 0; i < pages.length; i++) {
-        final file = File('$mangaDir/page_${i + 1}.jpg');
+        final file = File('$chapterDir/page_${i + 1}.jpg');
         final imageBytes = await file.readAsBytes();
         final image = pw.MemoryImage(imageBytes);
         pdf.addPage(
@@ -173,7 +177,7 @@ class _MangaReaderScreenState extends State<MangaReaderScreen> {
           ),
         );
       }
-      await pdf.save().then((bytes) => File('$mangaDir/${widget.chapter.title}.pdf').writeAsBytes(bytes));
+      await pdf.save().then((bytes) => File('$chapterDir/${widget.chapter.title}.pdf').writeAsBytes(bytes));
 
       // Update download status
       setState(() {
@@ -291,29 +295,53 @@ class _MangaReaderScreenState extends State<MangaReaderScreen> {
                   final imagePath = snapshot.data![index];
                   final isLocalFile = imagePath.contains(':\\') || imagePath.startsWith('/');
                   
-                  return InteractiveViewer(
-                    minScale: 1.0,
-                    maxScale: 3.0,
-                    child: isLocalFile
-                      ? Image.file(
-                          File(imagePath),
-                          fit: BoxFit.contain,
-                        )
-                      : Image.network(
-                          imagePath,
-                          fit: BoxFit.contain,
-                          loadingBuilder: (context, child, progress) {
-                            if (progress == null) return child;
-                            return Center(
-                              child: CircularProgressIndicator(
-                                value: progress.expectedTotalBytes != null
-                                    ? progress.cumulativeBytesLoaded /
-                                        progress.expectedTotalBytes!
-                                    : null,
-                              ),
-                            );
-                          },
-                        ),
+                  // Inicializar el controlador de transformación para esta página si no existe
+                  if (!_transformationControllers.containsKey(index)) {
+                    _transformationControllers[index] = TransformationController();
+                    _isZoomed[index] = false;
+                  }
+                  
+                  return GestureDetector(
+                    onDoubleTap: () {
+                      setState(() {
+                        if (_isZoomed[index] == true) {
+                          // Volver al tamaño original
+                          _transformationControllers[index]!.value = Matrix4.identity();
+                          _isZoomed[index] = false;
+                        } else {
+                          // Hacer zoom al doble del tamaño
+                          final Matrix4 newMatrix = Matrix4.identity()
+                            ..scale(2.0, 2.0); // Escalar al doble
+                          _transformationControllers[index]!.value = newMatrix;
+                          _isZoomed[index] = true;
+                        }
+                      });
+                    },
+                    child: InteractiveViewer(
+                      transformationController: _transformationControllers[index],
+                      minScale: 1.0,
+                      maxScale: 5.0,
+                      child: isLocalFile
+                        ? Image.file(
+                            File(imagePath),
+                            fit: BoxFit.contain,
+                          )
+                        : Image.network(
+                            imagePath,
+                            fit: BoxFit.contain,
+                            loadingBuilder: (context, child, progress) {
+                              if (progress == null) return child;
+                              return Center(
+                                child: CircularProgressIndicator(
+                                  value: progress.expectedTotalBytes != null
+                                      ? progress.cumulativeBytesLoaded /
+                                          progress.expectedTotalBytes!
+                                      : null,
+                                ),
+                              );
+                            },
+                          ),
+                    ),
                   );
                 },
               ),
@@ -345,6 +373,10 @@ class _MangaReaderScreenState extends State<MangaReaderScreen> {
   @override
   void dispose() {
     _pageController.dispose();
+    // Dispose de todos los controladores de transformación
+    for (var controller in _transformationControllers.values) {
+      controller.dispose();
+    }
     super.dispose();
   }
 }
