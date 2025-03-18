@@ -161,31 +161,52 @@ class _MangaDetailsScreenState extends State<MangaDetailsScreen> {
                     const SizedBox(height: 8),
                     Text('Status: ${manga.status}'),
                     const SizedBox(height: 8),
-                    SizedBox(
-                      height: 32,
-                      child: ListView(
-                        scrollDirection: Axis.horizontal,
-                        children: manga.genres.map((genre) => Padding(
-                          padding: const EdgeInsets.only(right: 8),
-                          child: Chip(
-                            label: Text(
-                              genre,
-                              style: const TextStyle(fontSize: 11),
-                            ),
-                            labelPadding: const EdgeInsets.symmetric(horizontal: 4),
-                            padding: EdgeInsets.zero,
-                            backgroundColor: Theme.of(context).primaryColor.withOpacity(0.2),
-                            visualDensity: VisualDensity.compact,
+                    if (manga.authors.isNotEmpty)
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Authors: ${manga.authors.join(', ')}',
+                            style: const TextStyle(fontSize: 14),
                           ),
-                        )).toList(),
+                          const SizedBox(height: 8),
+                        ],
                       ),
-                    ),
                   ],
                 ),
               ),
             ],
           ),
         ),
+        // Genres moved below the image and above description
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Genres:',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: manga.genres.map((genre) => Chip(
+                  label: Text(
+                    genre,
+                    style: const TextStyle(fontSize: 11),
+                  ),
+                  labelPadding: const EdgeInsets.symmetric(horizontal: 4),
+                  padding: EdgeInsets.zero,
+                  backgroundColor: Theme.of(context).primaryColor.withOpacity(0.2),
+                  visualDensity: VisualDensity.compact,
+                )).toList(),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
           child: Text(
