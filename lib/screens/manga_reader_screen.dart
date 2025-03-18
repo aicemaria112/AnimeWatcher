@@ -28,8 +28,9 @@ class _MangaReaderScreenState extends State<MangaReaderScreen> {
   PageController _pageController = PageController(initialPage: 0);
   int _currentPage = 0;
   bool _isLoading = false;
+  bool get _isAnyZoomed => _isZoomed.values.any((zoomed) => zoomed);
   double _downloadProgress = 0.0; // Track download progress percentage
-  
+  Offset _tapPosition = Offset.zero;
   // Variables para el control de zoom con doble tap
   final Map<int, TransformationController> _transformationControllers = {};
   final Map<int, bool> _isZoomed = {};
@@ -42,17 +43,17 @@ class _MangaReaderScreenState extends State<MangaReaderScreen> {
     _checkDownloadStatus();
     _saveLastViewedChapter();
   }
-  
+
   Future<List<String>> _getChapterImages() async {
     // Get manga title from the manga service
     final mangaDetail = await _mangaService.getMangaDetails(widget.mangaUrl);
-    
+
     // Check if the chapter is downloaded
     final isDownloaded = await _storageService.isChapterDownloaded(
-      mangaDetail.title, 
-      widget.chapter.title
+      mangaDetail.title,
+      widget.chapter.title,
     );
-    
+
     if (isDownloaded) {
       // If downloaded, get local image paths
       return _getLocalImagePaths();
@@ -61,14 +62,17 @@ class _MangaReaderScreenState extends State<MangaReaderScreen> {
       return _mangaService.getChapterImages(widget.chapter.urlLeer);
     }
   }
-  
+
   Future<List<String>> _getLocalImagePaths() async {
     // Get manga title from the manga service
     final mangaDetail = await _mangaService.getMangaDetails(widget.mangaUrl);
-    final chapterDir = await _storageService.getChapterDownloadPath(mangaDetail.title, widget.chapter.title);
+    final chapterDir = await _storageService.getChapterDownloadPath(
+      mangaDetail.title,
+      widget.chapter.title,
+    );
     final directory = Directory(chapterDir);
     final List<String> imagePaths = [];
-    
+
     // Get all jpg files in the directory
     final List<FileSystemEntity> files = await directory.list().toList();
     for (var file in files) {
@@ -76,28 +80,31 @@ class _MangaReaderScreenState extends State<MangaReaderScreen> {
         imagePaths.add(file.path);
       }
     }
-    
+
     // Sort the images by page number
     imagePaths.sort((a, b) {
       final aMatch = RegExp(r'page_([0-9]+)\.jpg').firstMatch(a);
       final bMatch = RegExp(r'page_([0-9]+)\.jpg').firstMatch(b);
       if (aMatch != null && bMatch != null) {
-        return int.parse(aMatch.group(1)!).compareTo(int.parse(bMatch.group(1)!));
+        return int.parse(
+          aMatch.group(1)!,
+        ).compareTo(int.parse(bMatch.group(1)!));
       }
       return a.compareTo(b);
     });
-    
+
     return imagePaths;
   }
+
   bool _isDownloaded = false;
-  
+
   Future<void> _checkDownloadStatus() async {
     // Get manga title from the manga service
     final mangaDetail = await _mangaService.getMangaDetails(widget.mangaUrl);
-    
+
     final isDownloaded = await _storageService.isChapterDownloaded(
-      mangaDetail.title, 
-      widget.chapter.title
+      mangaDetail.title,
+      widget.chapter.title,
     );
     setState(() {
       _isDownloaded = isDownloaded;
@@ -112,7 +119,7 @@ class _MangaReaderScreenState extends State<MangaReaderScreen> {
     setState(() {
       _currentPage = savedPage;
     });
-    
+
     // Use addPostFrameCallback to ensure the PageController is attached
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
@@ -133,7 +140,7 @@ class _MangaReaderScreenState extends State<MangaReaderScreen> {
     await _storageService.saveLastViewedChapter(
       widget.mangaUrl,
       widget.chapter.title,
-      widget.chapter.urlLeer
+      widget.chapter.urlLeer,
     );
   }
 
@@ -145,14 +152,17 @@ class _MangaReaderScreenState extends State<MangaReaderScreen> {
     try {
       // Get manga title from the manga service
       final mangaDetail = await _mangaService.getMangaDetails(widget.mangaUrl);
-      final chapterDir = await _storageService.getChapterDownloadPath(mangaDetail.title, widget.chapter.title);
-      
+      final chapterDir = await _storageService.getChapterDownloadPath(
+        mangaDetail.title,
+        widget.chapter.title,
+      );
+
       // Download images with progress tracking
       for (var i = 0; i < pages.length; i++) {
         final file = await DefaultCacheManager().getSingleFile(pages[i]);
         final newPath = '$chapterDir/page_${i + 1}.jpg';
         await file.copy(newPath);
-        
+
         // Update progress after each file is downloaded
         if (mounted) {
           setState(() {
@@ -170,14 +180,15 @@ class _MangaReaderScreenState extends State<MangaReaderScreen> {
         pdf.addPage(
           pw.Page(
             build: (context) {
-              return pw.Center(
-                child: pw.Image(image),
-              );
+              return pw.Center(child: pw.Image(image));
             },
           ),
         );
       }
-      await pdf.save().then((bytes) => File('$chapterDir/${widget.chapter.title}.pdf').writeAsBytes(bytes));
+      await pdf.save().then(
+        (bytes) =>
+            File('$chapterDir/${widget.chapter.title}.pdf').writeAsBytes(bytes),
+      );
 
       // Update download status
       setState(() {
@@ -190,7 +201,7 @@ class _MangaReaderScreenState extends State<MangaReaderScreen> {
           const SnackBar(content: Text('Chapter downloaded successfully')),
         );
       }
-      
+
       // Add bookmark for this manga
       await _storageService.addBookmark(widget.mangaUrl);
     } catch (e) {
@@ -217,11 +228,14 @@ class _MangaReaderScreenState extends State<MangaReaderScreen> {
             future: _pagesFuture,
             builder: (context, snapshot) {
               if (!snapshot.hasData) return const SizedBox();
-              
+
               if (_isDownloaded) {
                 return Container(
                   margin: const EdgeInsets.only(right: 16),
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.green.withOpacity(0.2),
                     borderRadius: BorderRadius.circular(12),
@@ -236,9 +250,9 @@ class _MangaReaderScreenState extends State<MangaReaderScreen> {
                   ),
                 );
               }
-              
+
               return _isLoading
-                ? Container(
+                  ? Container(
                     margin: const EdgeInsets.only(right: 16),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -263,7 +277,7 @@ class _MangaReaderScreenState extends State<MangaReaderScreen> {
                       ],
                     ),
                   )
-                : IconButton(
+                  : IconButton(
                     icon: const Icon(Icons.download),
                     onPressed: () => _downloadChapter(snapshot.data!),
                   );
@@ -286,6 +300,7 @@ class _MangaReaderScreenState extends State<MangaReaderScreen> {
             children: [
               PageView.builder(
                 controller: _pageController,
+                physics: _isAnyZoomed ? NeverScrollableScrollPhysics() : null, // Block page changes when zoomed
                 itemCount: snapshot.data!.length,
                 onPageChanged: (page) {
                   setState(() => _currentPage = page);
@@ -293,54 +308,71 @@ class _MangaReaderScreenState extends State<MangaReaderScreen> {
                 },
                 itemBuilder: (context, index) {
                   final imagePath = snapshot.data![index];
-                  final isLocalFile = imagePath.contains(':\\') || imagePath.startsWith('/');
-                  
+                  final isLocalFile =
+                      imagePath.contains(':\\') || imagePath.startsWith('/');
+
                   // Inicializar el controlador de transformación para esta página si no existe
                   if (!_transformationControllers.containsKey(index)) {
-                    _transformationControllers[index] = TransformationController();
+                    _transformationControllers[index] =
+                        TransformationController();
                     _isZoomed[index] = false;
                   }
-                  
+
                   return GestureDetector(
+                    onDoubleTapDown: (details) => _tapPosition = details.localPosition,
                     onDoubleTap: () {
                       setState(() {
                         if (_isZoomed[index] == true) {
                           // Volver al tamaño original
-                          _transformationControllers[index]!.value = Matrix4.identity();
+                          _transformationControllers[index]!.value =
+                              Matrix4.identity();
                           _isZoomed[index] = false;
                         } else {
                           // Hacer zoom al doble del tamaño
-                          final Matrix4 newMatrix = Matrix4.identity()
-                            ..scale(2.0, 2.0); // Escalar al doble
+                          final Matrix4 newMatrix =
+                              Matrix4.identity()
+                                ..translate(-_tapPosition.dx, -_tapPosition.dy)
+                                ..scale(2.0, 2.0); // Escalar al doble
                           _transformationControllers[index]!.value = newMatrix;
                           _isZoomed[index] = true;
                         }
                       });
                     },
                     child: InteractiveViewer(
-                      transformationController: _transformationControllers[index],
+                      transformationController:
+                          _transformationControllers[index],
                       minScale: 1.0,
+                      panEnabled: _isZoomed[index] ?? false,
                       maxScale: 5.0,
-                      child: isLocalFile
-                        ? Image.file(
-                            File(imagePath),
-                            fit: BoxFit.contain,
-                          )
-                        : Image.network(
-                            imagePath,
-                            fit: BoxFit.contain,
-                            loadingBuilder: (context, child, progress) {
-                              if (progress == null) return child;
-                              return Center(
-                                child: CircularProgressIndicator(
-                                  value: progress.expectedTotalBytes != null
-                                      ? progress.cumulativeBytesLoaded /
-                                          progress.expectedTotalBytes!
-                                      : null,
-                                ),
-                              );
-                            },
-                          ),
+                      boundaryMargin: EdgeInsets.all(double.infinity),
+                      clipBehavior: Clip.none,
+                      onInteractionEnd: (details) {
+                        final currentScale =
+                            _transformationControllers[index]!.value
+                                .getMaxScaleOnAxis();
+                        setState(() {
+                          _isZoomed[index] = currentScale > 1.0;
+                        });
+                      },
+                      child:
+                          isLocalFile
+                              ? Image.file(File(imagePath), fit: BoxFit.contain)
+                              : Image.network(
+                                imagePath,
+                                fit: BoxFit.contain,
+                                loadingBuilder: (context, child, progress) {
+                                  if (progress == null) return child;
+                                  return Center(
+                                    child: CircularProgressIndicator(
+                                      value:
+                                          progress.expectedTotalBytes != null
+                                              ? progress.cumulativeBytesLoaded /
+                                                  progress.expectedTotalBytes!
+                                              : null,
+                                    ),
+                                  );
+                                },
+                              ),
                     ),
                   );
                 },
@@ -351,7 +383,10 @@ class _MangaReaderScreenState extends State<MangaReaderScreen> {
                 right: 0,
                 child: Center(
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.black.withOpacity(0.7),
                       borderRadius: BorderRadius.circular(20),

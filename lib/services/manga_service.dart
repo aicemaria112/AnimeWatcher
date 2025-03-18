@@ -78,6 +78,11 @@ class MangaService {
         (rel) => rel['type'] == 'cover_art',
         orElse: () => null,
       );
+
+      final List<String> authors = (manga['relationships'] as List?)
+          ?.where((rel) => rel['type'] == 'author')
+          .map<String>((author) => author['attributes']['name']?.toString() ?? 'Unknown Author')
+          .toList() ?? [];
       
       final String? fileName = coverRelationship?['attributes']?['fileName'];
       final String coverUrl = fileName != null 
@@ -128,6 +133,7 @@ class MangaService {
         chapters: chapters,
         hasMoreChapters: hasMoreChapters,
         totalChapters: total,
+        authors: authors,
       );
     }
     throw Exception('Failed to load manga details');

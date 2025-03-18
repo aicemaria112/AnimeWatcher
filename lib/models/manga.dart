@@ -34,6 +34,7 @@ class MangaDetail extends Manga {
   final List<Chapter> chapters;
   final bool hasMoreChapters;
   final int totalChapters;
+  final List<String> authors;
 
   MangaDetail({
     required super.title,
@@ -48,6 +49,7 @@ class MangaDetail extends Manga {
     required this.chapters,
     this.hasMoreChapters = false,
     this.totalChapters = 0,
+    required this.authors,
   });
 
   factory MangaDetail.fromJson(Map<String, dynamic> json) {
@@ -64,6 +66,7 @@ class MangaDetail extends Manga {
       chapters: (json['capitulo'] as List<dynamic>? ?? [])
           .map((chapter) => Chapter.fromJson(chapter))
           .toList(),
+      authors:[],
     );
   }
 }
