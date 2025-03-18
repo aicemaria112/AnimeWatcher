@@ -34,6 +34,9 @@ class _MangaDetailsScreenState extends State<MangaDetailsScreen> {
   bool _hasMoreChapters = true;
   List<Chapter> _chapters = [];
   final ScrollController _scrollController = ScrollController();
+  
+  // Description expansion state
+  bool _isDescriptionExpanded = false;
 
   @override
   void initState() {
@@ -189,19 +192,24 @@ class _MangaDetailsScreenState extends State<MangaDetailsScreen> {
                 style: Theme.of(context).textTheme.titleMedium,
               ),
               const SizedBox(height: 8),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: manga.genres.map((genre) => Chip(
-                  label: Text(
-                    genre,
-                    style: const TextStyle(fontSize: 11),
+              SizedBox(
+                height: 32,
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    shrinkWrap: true,
+                    itemCount: manga.genres.length,
+                    separatorBuilder: (context, index) => const SizedBox(width: 4),
+                    itemBuilder: (context, index) => Chip(
+                    label: Text(
+                      manga.genres[index],
+                      style: const TextStyle(fontSize: 11),
+                    ),
+                    labelPadding: const EdgeInsets.symmetric(horizontal: 4),
+                    padding: EdgeInsets.zero,
+                    backgroundColor: Theme.of(context).primaryColor.withOpacity(0.2),
+                    visualDensity: VisualDensity.compact,
                   ),
-                  labelPadding: const EdgeInsets.symmetric(horizontal: 4),
-                  padding: EdgeInsets.zero,
-                  backgroundColor: Theme.of(context).primaryColor.withOpacity(0.2),
-                  visualDensity: VisualDensity.compact,
-                )).toList(),
+                ),
               ),
             ],
           ),
@@ -216,7 +224,34 @@ class _MangaDetailsScreenState extends State<MangaDetailsScreen> {
         ),
         Padding(
           padding: const EdgeInsets.all(16.0),
-          child: Text(manga.description),
+          child: GestureDetector(
+            onTap: () {
+              setState(() {
+                _isDescriptionExpanded = !_isDescriptionExpanded;
+              });
+            },
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  child: Text(
+                    manga.description,
+                    maxLines: _isDescriptionExpanded ? null : 3,
+                    overflow: _isDescriptionExpanded ? TextOverflow.visible : TextOverflow.ellipsis,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  _isDescriptionExpanded ? 'Mostrar Menos' : 'Mostrar Todo',
+                  style: TextStyle(
+                    color: Theme.of(context).primaryColor,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ],
     );
