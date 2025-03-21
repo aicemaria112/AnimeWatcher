@@ -697,7 +697,7 @@ class _MangaDetailsScreenState extends State<MangaDetailsScreen> {
                                 ),
                               ),
                               subtitle: Text(
-                                'Chapter ${index + 1} of ${manga.totalChapters}',
+                                'Chapter ${manga.totalChapters-index} of ${manga.totalChapters}',
                                 style: TextStyle(
                                   fontSize: 12,
                                   color: Colors.grey[400],
