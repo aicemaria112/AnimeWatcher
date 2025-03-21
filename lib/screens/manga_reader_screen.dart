@@ -319,7 +319,7 @@ class _MangaReaderScreenState extends State<MangaReaderScreen> {
                   }
 
                   return GestureDetector(
-                    onDoubleTapDown: (details) => _tapPosition = details.localPosition,
+                    onDoubleTapDown: (details) => _tapPosition = details.globalPosition,
                     onDoubleTap: () {
                       setState(() {
                         if (_isZoomed[index] == true) {

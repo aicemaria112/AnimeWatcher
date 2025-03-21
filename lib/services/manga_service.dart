@@ -149,11 +149,11 @@ class MangaService {
       final Map<String, dynamic> serverData = json.decode(serverResponse.body);
       final String baseUrl = serverData['baseUrl'];
       final String hash = serverData['chapter']['hash'];
-      final List<dynamic> data = serverData['chapter']['dataSaver'];
+      final List<dynamic> data = serverData['chapter']['data'];
       
       // Construct image URLs
       return data.map<String>((imageName) {
-        return '$baseUrl/data-saver/$hash/$imageName';
+        return '$baseUrl/data/$hash/$imageName';
       }).toList();
     }
     throw Exception('Failed to load chapter images');
