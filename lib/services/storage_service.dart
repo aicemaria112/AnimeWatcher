@@ -135,6 +135,17 @@ class StorageService {
     return prefs.getStringList(bookmarksKey) ?? [];
   }
 
+  // Scroll direction methods
+  Future<bool?> getScrollDirection() async {
+    final prefs = await _ensureInitialized();
+    return prefs.getBool('scroll_direction');
+  }
+
+  Future<void> saveScrollDirection(bool isHorizontal) async {
+    final prefs = await _ensureInitialized();
+    await prefs.setBool('scroll_direction', isHorizontal);
+  }
+
   // Check if a chapter is downloaded
   Future<bool> isChapterDownloaded(String mangaTitle, String chapterTitle) async {
     final mangaDir = await getMangaDownloadPath(_sanitizeFileName(mangaTitle));

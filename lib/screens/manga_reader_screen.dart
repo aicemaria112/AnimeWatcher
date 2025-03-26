@@ -25,7 +25,8 @@ class _MangaReaderScreenState extends State<MangaReaderScreen> {
   final MangaService _mangaService = MangaService();
   final StorageService _storageService = StorageService();
   late Future<List<String>> _pagesFuture;
-  PageController _pageController = PageController(initialPage: 0);
+  bool _isHorizontalScroll = true;
+  late PageController _pageController;
   int _currentPage = 0;
   bool _isLoading = false;
   bool get _isAnyZoomed => _isZoomed.values.any((zoomed) => zoomed);
@@ -38,10 +39,12 @@ class _MangaReaderScreenState extends State<MangaReaderScreen> {
   @override
   void initState() {
     super.initState();
+    _loadScrollDirection();
     _pagesFuture = _getChapterImages();
     _loadSavedPage();
     _checkDownloadStatus();
     _saveLastViewedChapter();
+    _pageController = PageController(initialPage: 0);
   }
 
   Future<List<String>> _getChapterImages() async {
@@ -224,6 +227,10 @@ class _MangaReaderScreenState extends State<MangaReaderScreen> {
       appBar: AppBar(
         title: Text(widget.chapter.title),
         actions: [
+          IconButton(
+            icon: Icon(_isHorizontalScroll ? Icons.swap_horiz : Icons.swap_vert),
+            onPressed: _toggleScrollDirection,
+          ),
           FutureBuilder<List<String>>(
             future: _pagesFuture,
             builder: (context, snapshot) {
@@ -300,6 +307,7 @@ class _MangaReaderScreenState extends State<MangaReaderScreen> {
             children: [
               PageView.builder(
                 controller: _pageController,
+                scrollDirection: _isHorizontalScroll ? Axis.horizontal : Axis.vertical,
                 physics: _isAnyZoomed ? NeverScrollableScrollPhysics() : null, // Block page changes when zoomed
                 itemCount: snapshot.data!.length,
                 onPageChanged: (page) {
@@ -408,10 +416,23 @@ class _MangaReaderScreenState extends State<MangaReaderScreen> {
   @override
   void dispose() {
     _pageController.dispose();
-    // Dispose de todos los controladores de transformación
     for (var controller in _transformationControllers.values) {
       controller.dispose();
     }
     super.dispose();
+  }
+
+  Future<void> _loadScrollDirection() async {
+    final direction = await _storageService.getScrollDirection();
+    setState(() => _isHorizontalScroll = direction ?? true);
+  }
+
+  void _toggleScrollDirection() async {
+    setState(() {
+      _isHorizontalScroll = !_isHorizontalScroll;
+      _pageController.dispose();
+      _pageController = PageController(initialPage: _currentPage);
+    });
+    await _storageService.saveScrollDirection(_isHorizontalScroll);
   }
 }
