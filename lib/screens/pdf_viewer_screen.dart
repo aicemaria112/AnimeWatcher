@@ -95,7 +95,7 @@ class _PDFViewerScreenState extends State<PDFViewerScreen> {
               autoSpacing: false,
               pageFling: !_isContinuousMode,
               pageSnap: !_isContinuousMode,
-              fitPolicy: FitPolicy.HEIGHT,
+              fitPolicy: FitPolicy.BOTH,
               backgroundColor: Colors.black,
               onRender: (pages) {
                 setState(() {
