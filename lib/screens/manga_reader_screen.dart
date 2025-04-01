@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'dart:io';
+import 'dart:ui';
 import '../models/manga.dart';
 import '../services/manga_service.dart';
 import '../services/storage_service.dart';
@@ -206,10 +208,21 @@ class _MangaReaderScreenState extends State<MangaReaderScreen> {
         final file = File('$chapterDir/page_${i + 1}.jpg');
         final imageBytes = await file.readAsBytes();
         final image = pw.MemoryImage(imageBytes);
+        
+        // Decodificar la imagen para obtener sus dimensiones
+        final decodedImage = await decodeImageFromList(imageBytes);
+        final width = decodedImage.width.toDouble();
+        final height = decodedImage.height.toDouble();
+        
+        // Crear un formato de página personalizado basado en las dimensiones de la imagen
+        final pageFormat = PdfPageFormat(width, height);
+        
         pdf.addPage(
           pw.Page(
+            pageFormat: pageFormat,
             build: (context) {
-              return pw.Center(child: pw.Image(image));
+              // Usar la imagen sin centrarla para que ocupe toda la página
+              return pw.Image(image, fit: pw.BoxFit.fill);
             },
           ),
         );
