@@ -6,6 +6,7 @@ import 'dart:io';
 import '../models/manga.dart';
 import '../services/manga_service.dart';
 import '../services/storage_service.dart';
+import './pdf_viewer_screen.dart';
 
 class MangaReaderScreen extends StatefulWidget {
   final Chapter chapter;
@@ -58,7 +59,32 @@ class _MangaReaderScreenState extends State<MangaReaderScreen> {
     );
 
     if (isDownloaded) {
-      // If downloaded, get local image paths
+      // If downloaded, check if PDF exists
+      final chapterDir = await _storageService.getChapterDownloadPath(
+        mangaDetail.title,
+        widget.chapter.title,
+      );
+      final pdfFile = File('$chapterDir/${widget.chapter.title}.pdf');
+      
+      // If PDF exists, open PDF viewer
+      if (await pdfFile.exists()) {
+        // Use a delayed microtask to navigate after the current build cycle
+        Future.microtask(() {
+          if (mounted) {
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(
+                builder: (context) => PDFViewerScreen(
+                  pdfPath: pdfFile.path,
+                  title: widget.chapter.title,
+                ),
+              ),
+            );
+          }
+        });
+      }
+      
+      // Return local image paths for the current view
+      // (this will be used if the navigation doesn't happen)
       return _getLocalImagePaths();
     } else {
       // If not downloaded, fetch from network
@@ -308,6 +334,7 @@ class _MangaReaderScreenState extends State<MangaReaderScreen> {
               PageView.builder(
                 controller: _pageController,
                 scrollDirection: _isHorizontalScroll ? Axis.horizontal : Axis.vertical,
+                pageSnapping: !_isHorizontalScroll,
                 physics: _isAnyZoomed ? NeverScrollableScrollPhysics() : null, // Block page changes when zoomed
                 itemCount: snapshot.data!.length,
                 onPageChanged: (page) {
